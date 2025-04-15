@@ -3,7 +3,7 @@ from os import environ
 import pytest
 from dotenv import load_dotenv
 
-from pysei import Client
+from python_sei import Client
 
 load_dotenv()
 

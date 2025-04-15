@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [project]
-name = "pysei"
+name = "sei_py"
 description = "Client em Python da API do SEI v4"
 keywords = ["sei", "client"]
 authors = [
