@@ -85,6 +85,14 @@ class AtributoAndamento(Model):
     valor: str
     id_origem: str
 
+    @staticmethod
+    def from_record(record):
+        return AtributoAndamento(
+            nome=record["Nome"],
+            valor=record["Valor"],
+            id_origem=record["IdOrigem"],
+        )
+
 
 @dataclass
 class Assunto(Model):
