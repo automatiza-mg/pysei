@@ -5,7 +5,8 @@ from python_sei.enums import Aplicabilidade
 @pytest.mark.integration
 def test_listar_unidades(client):
     unidades = client.listar_unidades()
-    assert len(unidades) >= 0
+    if len(unidades) > 0:
+        assert unidades[0].id_unidade != ""
 
 
 @pytest.mark.integration

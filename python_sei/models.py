@@ -1,17 +1,23 @@
 from dataclasses import dataclass
-from typing import Self
+from typing import Self, Any
 
 from .enums import Aplicabilidade, NivelAcesso
 from .sin import decode_sin, encode_sin
 
 
 class Model:
+    _raw_value: Any | None = None
+
     @staticmethod
-    def from_record(record: dict) -> Self: ...
+    def from_record(record: Any) -> Self: ...
 
     @classmethod
     def from_many_records(cls, records: list[dict]) -> list[Self]:
         return [cls.from_record(record) for record in records]
+
+    @property
+    def raw_value(self):
+        return self._raw_value
 
 
 @dataclass
@@ -26,7 +32,7 @@ class Assinatura(Model):
 
     @staticmethod
     def from_record(record):
-        return Assinatura(
+        assinatura = Assinatura(
             nome=record["Nome"],
             cargo_funcao=record["CargoFuncao"],
             data_hora=record["DataHora"],
@@ -36,6 +42,9 @@ class Assinatura(Model):
             sigla=record["Sigla"],
         )
 
+        assinatura._raw_value = record
+        return assinatura
+
 
 @dataclass
 class Campo(Model):
@@ -44,10 +53,13 @@ class Campo(Model):
 
     @staticmethod
     def from_record(record):
-        return Campo(
+        campo = Campo(
             nome=record["Nome"],
             valor=record["Valor"],
         )
+
+        campo._raw_value = record
+        return campo
 
 
 @dataclass
@@ -61,7 +73,7 @@ class Unidade(Model):
 
     @staticmethod
     def from_record(record):
-        return Unidade(
+        unidade = Unidade(
             id_unidade=record["IdUnidade"],
             sigla=record["Sigla"],
             descricao=record["Descricao"],
@@ -69,6 +81,9 @@ class Unidade(Model):
             arquivamento=decode_sin(record["SinArquivamento"]),
             ouvidoria=decode_sin(record["SinOuvidoria"]),
         )
+
+        unidade._raw_value = record
+        return unidade
 
 
 @dataclass
@@ -79,11 +94,13 @@ class Usuario(Model):
 
     @staticmethod
     def from_record(record):
-        return Usuario(
+        usuario = Usuario(
             id_usuario=record["IdUsuario"],
             sigla=record["Sigla"],
             nome=record["Nome"],
         )
+        usuario._raw_value = record
+        return usuario
 
 
 @dataclass
@@ -94,11 +111,14 @@ class AtributoAndamento(Model):
 
     @staticmethod
     def from_record(record):
-        return AtributoAndamento(
+        atributo = AtributoAndamento(
             nome=record["Nome"],
             valor=record["Valor"],
             id_origem=record["IdOrigem"],
         )
+
+        atributo._raw_value = record
+        return atributo
 
 
 @dataclass
@@ -108,10 +128,13 @@ class Assunto(Model):
 
     @staticmethod
     def from_record(record: dict):
-        return Assunto(
+        assunto = Assunto(
             codigo_estruturado=record["CodigoEstruturado"],
             descricao=record["Descricao"],
         )
+
+        assunto._raw_value = record
+        return assunto
 
 
 @dataclass
@@ -122,11 +145,14 @@ class ProcedimentoResumido(Model):
 
     @staticmethod
     def from_record(record):
-        return ProcedimentoResumido(
+        procedimento = ProcedimentoResumido(
             id_tipo_procedimento=record["IdTipoProcedimento"],
             procedimento_formatado=record["ProcedimentoFormatado"],
             tipo_procedimento=record["TipoProcedimento"],
         )
+
+        procedimento._raw_value = record
+        return procedimento
 
 
 @dataclass
@@ -136,10 +162,13 @@ class Observacao(Model):
 
     @staticmethod
     def from_record(record):
-        return Observacao(
+        observacao = Observacao(
             descricao=record["Descricao"],
             unidade=Unidade.from_record(record["Unidade"]),
         )
+
+        observacao._raw_value = record
+        return observacao
 
 
 @dataclass
@@ -149,10 +178,13 @@ class Interessado(Model):
 
     @staticmethod
     def from_record(record):
-        return Interessado(
+        interessado = Interessado(
             sigla=record["Sigla"],
             nome=record["Nome"],
         )
+
+        interessado._raw_value = record
+        return interessado
 
 
 @dataclass
@@ -190,6 +222,7 @@ class Andamento(Model):
                 record["Atributos"]
             )
 
+        andamento._raw_value = record
         return andamento
 
 
@@ -202,12 +235,15 @@ class Marcador(Model):
 
     @staticmethod
     def from_record(record):
-        return Marcador(
+        marcador = Marcador(
             id_marcador=record["IdMarcador"],
             nome=record["Nome"],
             icone=record["Icone"],
             ativo=decode_sin(record["SinAtivo"]),
         )
+
+        marcador._raw_value = record
+        return marcador
 
 
 @dataclass
@@ -216,6 +252,18 @@ class ArquivoExtensao(Model):
     texto: str
     data_hora: str
     usuario: Usuario
+
+    @staticmethod
+    def from_record(record):
+        extensao = ArquivoExtensao(
+            id_andamento_marcador=record["IdAndamentoMarcador"],
+            texto=record["Texto"],
+            data_hora=record["DataHora"],
+            usuario=Usuario.from_record(record["Usuario"]),
+        )
+
+        extensao._raw_value = record
+        return extensao
 
 
 @dataclass
@@ -251,6 +299,7 @@ class Serie(Model):
         if record["Aplicabilidade"] is not None:
             serie.aplicabilidade = Aplicabilidade.from_str(record["Aplicabilidade"])
 
+        serie._raw_value = record
         return serie
 
 
@@ -261,10 +310,13 @@ class TipoProcedimento(Model):
 
     @staticmethod
     def from_record(record):
-        return TipoProcedimento(
+        tipo_procedimento = TipoProcedimento(
             id_tipo_procedimento=record["IdTipoProcedimento"],
             nome=record["Nome"],
         )
+
+        tipo_procedimento._raw_value = record
+        return tipo_procedimento
 
 
 @dataclass
@@ -274,10 +326,13 @@ class UnidadeProcedimentoAberto(Model):
 
     @staticmethod
     def from_record(record):
-        return UnidadeProcedimentoAberto(
+        unidade = UnidadeProcedimentoAberto(
             unidade=Unidade.from_record(record["Unidade"]),
             usuario_atribuido=Usuario.from_record(record["UsuarioAtribuido"]),
         )
+
+        unidade._raw_value = record
+        return unidade
 
 
 @dataclass
@@ -302,7 +357,7 @@ class RetornoConsultaProcedimento(Model):
 
     @staticmethod
     def from_record(record):
-        return RetornoConsultaProcedimento(
+        procedimento = RetornoConsultaProcedimento(
             id_procedimento=record["IdProcedimento"],
             procedimento_formatado=record["ProcedimentoFormatado"],
             especificacao=record["Especificacao"],
@@ -328,6 +383,9 @@ class RetornoConsultaProcedimento(Model):
             ),
         )
 
+        procedimento._raw_value = record
+        return procedimento
+
 
 @dataclass
 class RetornoConsultaDocumento(Model):
@@ -350,7 +408,7 @@ class RetornoConsultaDocumento(Model):
 
     @staticmethod
     def from_record(record):
-        return RetornoConsultaDocumento(
+        documento = RetornoConsultaDocumento(
             id_procedimento=record["IdProcedimento"],
             procedimento_formatado=record["ProcedimentoFormatado"],
             id_documento=record["IdDocumento"],
@@ -367,3 +425,6 @@ class RetornoConsultaDocumento(Model):
             assinaturas=Assinatura.from_many_records(record["Assinaturas"]),
             campos=Campo.from_many_records(record["Campos"]),
         )
+
+        documento._raw_value = record
+        return documento
