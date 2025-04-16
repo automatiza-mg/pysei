@@ -1,37 +1,8 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import Self
 
+from .enums import Aplicabilidade, NivelAcesso
 from .sin import decode_sin, encode_sin
-
-
-class NivelAcesso(Enum):
-    PUBLICO = 0
-    RESTRITO = 1
-    SIGILOSO = 2
-
-    @staticmethod
-    def from_str(value: str) -> Self:
-        match value:
-            case "0":
-                return NivelAcesso.PUBLICO
-            case "1":
-                return NivelAcesso.RESTRITO
-            case "2":
-                return NivelAcesso.SIGILOSO
-            case _:
-                raise ValueError("Invalid NivelAcesso value")
-
-    def to_str(self) -> str:
-        match self:
-            case NivelAcesso.PUBLICO:
-                return "0"
-            case NivelAcesso.RESTRITO:
-                return "1"
-            case NivelAcesso.SIGILOSO:
-                return "2"
-            case _:
-                raise ValueError("Invalid NivelAcesso")
 
 
 class Model:
@@ -44,13 +15,49 @@ class Model:
 
 
 @dataclass
+class Assinatura(Model):
+    nome: str
+    cargo_funcao: str
+    data_hora: str
+    id_usuario: str
+    id_origem: str
+    id_orgao: str
+    sigla: str
+
+    @staticmethod
+    def from_record(record):
+        return Assinatura(
+            nome=record["Nome"],
+            cargo_funcao=record["CargoFuncao"],
+            data_hora=record["DataHora"],
+            id_usuario=record["IdUsuario"],
+            id_origem=record["IdOrigem"],
+            id_orgao=record["IdOrgao"],
+            sigla=record["Sigla"],
+        )
+
+
+@dataclass
+class Campo(Model):
+    nome: str
+    valor: str
+
+    @staticmethod
+    def from_record(record):
+        return Campo(
+            nome=record["Nome"],
+            valor=record["Valor"],
+        )
+
+
+@dataclass
 class Unidade(Model):
     id_unidade: str
     sigla: str
     descricao: str
-    protocolo: bool
-    arquivamento: bool
-    ouvidoria: bool
+    protocolo: bool | None
+    arquivamento: bool | None
+    ouvidoria: bool | None
 
     @staticmethod
     def from_record(record):
@@ -193,6 +200,15 @@ class Marcador(Model):
     icone: str
     ativo: bool
 
+    @staticmethod
+    def from_record(record):
+        return Marcador(
+            id_marcador=record["IdMarcador"],
+            nome=record["Nome"],
+            icone=record["Icone"],
+            ativo=decode_sin(record["SinAtivo"]),
+        )
+
 
 @dataclass
 class ArquivoExtensao(Model):
@@ -216,6 +232,26 @@ class DefinicaoControlePrazo(Model):
             "Dias": self.dias,
             "SinDiasUteis": encode_sin(self.dias_uteis),
         }
+
+
+@dataclass
+class Serie(Model):
+    id_serie: str
+    nome: str
+    aplicabilidade: Aplicabilidade | None
+
+    @staticmethod
+    def from_record(record):
+        serie = Serie(
+            id_serie=record["IdSerie"],
+            nome=record["Nome"],
+            aplicabilidade=None,
+        )
+
+        if record["Aplicabilidade"] is not None:
+            serie.aplicabilidade = Aplicabilidade.from_str(record["Aplicabilidade"])
+
+        return serie
 
 
 @dataclass
@@ -290,4 +326,44 @@ class RetornoConsultaProcedimento(Model):
             procedimentos_anexados=ProcedimentoResumido.from_many_records(
                 record["ProcedimentosAnexados"]
             ),
+        )
+
+
+@dataclass
+class RetornoConsultaDocumento(Model):
+    id_procedimento: str
+    procedimento_formatado: str
+    id_documento: str
+    documento_formatado: str
+    nivel_acesso_local: NivelAcesso
+    nivel_acesso_global: NivelAcesso
+    link_acesso: str
+    serie: Serie
+    numero: str | None
+    nome_arvore: str
+    descricao: str
+    data: str
+    unidade_elaboradora: Unidade
+    andamento_geracao: Andamento
+    assinaturas: list[Assinatura]
+    campos: list[Campo]
+
+    @staticmethod
+    def from_record(record):
+        return RetornoConsultaDocumento(
+            id_procedimento=record["IdProcedimento"],
+            procedimento_formatado=record["ProcedimentoFormatado"],
+            id_documento=record["IdDocumento"],
+            documento_formatado=record["DocumentoFormatado"],
+            nivel_acesso_local=NivelAcesso.from_str(record["NivelAcessoLocal"]),
+            nivel_acesso_global=NivelAcesso.from_str(record["NivelAcessoGlobal"]),
+            link_acesso=record["NivelAcesso"],
+            serie=Serie.from_record(record["Serie"]),
+            numero=record["Numero"],
+            nome_arvore=record["NomeArvore"],
+            descricao=record["Descricao"],
+            unidade_elaboradora=Unidade.from_record(record["UnidadeElaboradora"]),
+            andamento_geracao=Andamento.from_record(record["AndamentoGeracao"]),
+            assinaturas=Assinatura.from_many_records(record["Assinaturas"]),
+            campos=Campo.from_many_records(record["Campos"]),
         )

@@ -10,16 +10,17 @@ name = "python_sei"
 description = "Client em Python da API do SEI v4"
 keywords = ["sei", "client"]
 authors = [
-    { name = "Felipe Felix Souza dos Santos", email = "felipefelix2704@gmail.com" }
+    { name = "Felipe Felix Souza dos Santos", email = "felipefelix2704@gmail.com" },
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
 license = { file = "LICENSE" }
-dependencies = [
-    "zeep"
-]
+dependencies = ["zeep"]
 dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/automatiza-mg/sei"
 Issues = "https://github.com/automatiza-mg/sei/issues"
+
+[tool.pytest.ini_options]
+markers = ["integration"]

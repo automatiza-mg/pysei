@@ -2,9 +2,11 @@ import zeep
 
 from .models import (
     DefinicaoControlePrazo,
-    RetornoConsultaProcedimento,  # noqa
+    RetornoConsultaProcedimento,
+    Serie,
     Unidade,
     Usuario,
+    Marcador,
 )
 from .sin import encode_sin
 
@@ -37,7 +39,7 @@ class Client:
         self,
         id_unidade: str,
         id_usuario: str = "",
-    ):
+    ) -> list[Usuario]:
         """Retorna a lista de usuários de uma unidade"""
         records = self._service.listarUsuarios(
             SiglaSistema=self.sigla_sistema,
@@ -60,7 +62,7 @@ class Client:
         retornar_unidades_procedimento_aberto: bool = False,
         retornar_procedimentos_relacionados: bool = False,
         retornar_procedimentos_anexados: bool = False,
-    ):
+    ) -> RetornoConsultaProcedimento:
         record = self._service.consultarProcedimento(
             SiglaSistema=self.sigla_sistema,
             IdentificacaoServico=self.identificacao_servico,
@@ -82,17 +84,64 @@ class Client:
                 retornar_procedimentos_anexados
             ),
         )
-        # return record
         return RetornoConsultaProcedimento.from_record(record)
 
     def definir_controle_prazo(
         self,
         id_unidade: str,
         definicoes: list[DefinicaoControlePrazo],
-    ):
+    ) -> None:
         self._service.definirControlePrazo(
             SiglaSistema=self.sigla_sistema,
             IdentificacaoServico=self.identificacao_servico,
             IdUnidade=id_unidade,
             Definicoes=[definicao.to_record() for definicao in definicoes],
         )
+
+    def listar_marcadores_unidade(self, id_unidade: str) -> list[Marcador]:
+        """Lista todos os marcadores de uma unidade."""
+        records = self._service.listarMarcadoresUnidade(
+            SiglaSistema=self.sigla_sistema,
+            IdentificacaoServico=self.identificacao_servico,
+            IdUnidade=id_unidade,
+        )
+        return Marcador.from_many_records(records)
+
+    def listar_series(
+        self,
+        id_unidade: str = "",
+        id_tipo_procedimento: str = "",
+    ) -> list[Serie]:
+        """
+        Lista todas as séries, que são tipos de documentos como `Memorando`, `Despacho`, etc,
+        disponíveis no SEI
+        """
+        records = self._service.listarSeries(
+            SiglaSistema=self.sigla_sistema,
+            IdentificacaoServico=self.identificacao_servico,
+            IdUnidade=id_unidade,
+            IdTipoProcedimento=id_tipo_procedimento,
+        )
+        return Serie.from_many_records(records)
+
+    def _consultar_documento(
+        self,
+        id_unidade: str,
+        protocolo_documento: str,
+        retornar_andamento_geracao: bool = False,
+        retornar_assinaturas: bool = False,
+        retornar_publicacao: bool = False,
+        retornar_campos: bool = False,
+    ):
+        record = self._service.consultarDocumento(
+            SiglaSistema=self.sigla_sistema,
+            IdentificacaoServico=self.identificacao_servico,
+            IdUnidade=id_unidade,
+            ProtocoloDocumento=protocolo_documento,
+            SinRetornarAndamentoGeracao=encode_sin(retornar_andamento_geracao),
+            SinRetornarAssinaturas=encode_sin(retornar_assinaturas),
+            SinRetornarPublicacao=encode_sin(retornar_publicacao),
+            SinRetornarCampos=encode_sin(retornar_campos),
+        )
+
+        return record
