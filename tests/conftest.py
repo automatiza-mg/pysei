@@ -15,3 +15,18 @@ def client():
     identificacao_servico = environ.get("SEI_IDENTIFICACAO_SERVICO")
 
     return Client(url, sigla_sistema, identificacao_servico)
+
+
+@pytest.fixture
+def id_unidade():
+    return environ.get("TEST_ID_UNIDADE")
+
+
+@pytest.fixture
+def protocolo_documento():
+    return environ.get("TEST_PROTOCOLO_DOCUMENTO")
+
+
+@pytest.fixture
+def protocolo_procedimento():
+    return environ.get("TEST_PROTOCOLO_PROCEDIMENTO")

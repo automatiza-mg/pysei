@@ -19,8 +19,8 @@ dependencies = ["zeep"]
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/automatiza-mg/sei"
-Issues = "https://github.com/automatiza-mg/sei/issues"
+Homepage = "https://github.com/automatiza-mg/pysei"
+Issues = "https://github.com/automatiza-mg/pysei/issues"
 
 [tool.pytest.ini_options]
 markers = ["integration"]

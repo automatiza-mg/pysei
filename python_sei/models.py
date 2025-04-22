@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from typing import Self, Any
+from typing import Self, OrderedDict
 
 from .enums import Aplicabilidade, NivelAcesso
 from .sin import decode_sin, encode_sin
 
 
 class Model:
-    _raw_value: Any | None = None
+    _raw_value: OrderedDict | None = None
 
     @staticmethod
-    def from_record(record: Any) -> Self: ...
+    def from_record(record: OrderedDict) -> Self: ...
 
     @classmethod
     def from_many_records(cls, records: list[dict]) -> list[Self]:
@@ -127,7 +127,7 @@ class Assunto(Model):
     descricao: str | None
 
     @staticmethod
-    def from_record(record: dict):
+    def from_record(record):
         assunto = Assunto(
             codigo_estruturado=record["CodigoEstruturado"],
             descricao=record["Descricao"],
@@ -189,17 +189,20 @@ class Interessado(Model):
 
 @dataclass
 class Andamento(Model):
-    id_andamento: str | None
-    id_tarefa: str | None
-    id_tarefa_modulo: str | None
-    descricao: str | None
-    data_hora: str | None
+    id_andamento: str
+    id_tarefa: str
+    id_tarefa_modulo: str
+    descricao: str
+    data_hora: str
     unidade: Unidade | None
     usuario: Usuario | None
     atributos: list[AtributoAndamento] | None
 
     @staticmethod
     def from_record(record):
+        if Andamento.is_blank(record):
+            return None
+
         andamento = Andamento(
             id_andamento=record["IdAndamento"],
             id_tarefa=record["IdTarefa"],
@@ -224,6 +227,19 @@ class Andamento(Model):
 
         andamento._raw_value = record
         return andamento
+
+    @staticmethod
+    def is_blank(record: OrderedDict) -> bool:
+        return record == {
+            "IdAndamento": None,
+            "IdTarefa": None,
+            "IdTarefaModulo": None,
+            "Descricao": None,
+            "DataHora": None,
+            "Unidade": None,
+            "Usuario": None,
+            "Atributos": None,
+        }
 
 
 @dataclass
@@ -336,6 +352,59 @@ class UnidadeProcedimentoAberto(Model):
 
 
 @dataclass
+class Publicacao(Model):
+    id_publicacao: str
+    id_documento: str
+    sta_motivo: str
+    resumo: str
+    id_veiculo_publicacao: str
+    nome_veiculo: str
+    sta_tipo_veiculo: str
+    numero: str
+    data_disponibilizacao: str
+    data_publicacao: str
+    estado: str
+    imprensa_nacional: str
+
+    @staticmethod
+    def from_record(record):
+        if Publicacao.is_empty(record):
+            return None
+
+        return Publicacao(
+            id_publicacao=record["IdPublicacao"],
+            id_documento=record["IdDocumento"],
+            sta_motivo=record["StaMotivo"],
+            resumo=record["Resumo"],
+            id_veiculo_publicacao=record["IdVeiculoPublicacao"],
+            nome_veiculo=record["NomeVeiculo"],
+            sta_tipo_veiculo=record["StaTipoVeiculo"],
+            numero=record["Numero"],
+            data_disponibilizacao=record["DataDisponibilizacao"],
+            data_publicacao=record["DataPublicacao"],
+            estado=record["Estado"],
+            imprensa_nacional=record["ImprensaNacional"],
+        )
+
+    @staticmethod
+    def is_empty(record: OrderedDict) -> bool:
+        return record == {
+            "IdPublicacao": None,
+            "IdDocumento": None,
+            "StaMotivo": None,
+            "Resumo": None,
+            "IdVeiculoPublicacao": None,
+            "NomeVeiculo": None,
+            "StaTipoVeiculo": None,
+            "Numero": None,
+            "DataDisponibilizacao": None,
+            "DataPublicacao": None,
+            "Estado": None,
+            "ImprensaNacional": None,
+        }
+
+
+@dataclass
 class RetornoConsultaProcedimento(Model):
     id_procedimento: str
     procedimento_formatado: str
@@ -345,9 +414,9 @@ class RetornoConsultaProcedimento(Model):
     nivel_acesso_local: NivelAcesso
     nivel_acesso_global: NivelAcesso
     tipo_procedimento: TipoProcedimento
-    andamento_geracao: Andamento
-    andamento_conclusao: Andamento
-    ultimo_andamento: Andamento
+    andamento_geracao: Andamento | None
+    andamento_conclusao: Andamento | None
+    ultimo_andamento: Andamento | None
     unidades_procedimento_aberto: list[UnidadeProcedimentoAberto]
     assuntos: list[Assunto]
     observacoes: list[Observacao]
@@ -398,12 +467,13 @@ class RetornoConsultaDocumento(Model):
     link_acesso: str
     serie: Serie
     numero: str | None
-    nome_arvore: str
-    descricao: str
+    nome_arvore: str | None
+    descricao: str | None
     data: str
     unidade_elaboradora: Unidade
-    andamento_geracao: Andamento
+    andamento_geracao: Andamento | None
     assinaturas: list[Assinatura]
+    publicacao: Publicacao | None
     campos: list[Campo]
 
     @staticmethod
@@ -413,16 +483,18 @@ class RetornoConsultaDocumento(Model):
             procedimento_formatado=record["ProcedimentoFormatado"],
             id_documento=record["IdDocumento"],
             documento_formatado=record["DocumentoFormatado"],
+            link_acesso=record["LinkAcesso"],
             nivel_acesso_local=NivelAcesso.from_str(record["NivelAcessoLocal"]),
             nivel_acesso_global=NivelAcesso.from_str(record["NivelAcessoGlobal"]),
-            link_acesso=record["NivelAcesso"],
             serie=Serie.from_record(record["Serie"]),
             numero=record["Numero"],
             nome_arvore=record["NomeArvore"],
             descricao=record["Descricao"],
+            data=record["Data"],
             unidade_elaboradora=Unidade.from_record(record["UnidadeElaboradora"]),
             andamento_geracao=Andamento.from_record(record["AndamentoGeracao"]),
             assinaturas=Assinatura.from_many_records(record["Assinaturas"]),
+            publicacao=Publicacao.from_record(record["Publicacao"]),
             campos=Campo.from_many_records(record["Campos"]),
         )
 

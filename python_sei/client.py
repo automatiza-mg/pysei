@@ -1,4 +1,6 @@
 import zeep
+from zeep.helpers import serialize_object
+import zeep.xsd
 
 from .models import (
     DefinicaoControlePrazo,
@@ -7,11 +9,18 @@ from .models import (
     Unidade,
     Usuario,
     Marcador,
+    RetornoConsultaDocumento,
+    Andamento,
 )
 from .sin import encode_sin
 
 
 class Client:
+    """
+    TODO: Verificar os valores das constantes tarefas e taferas internas listadas
+    no arquivo `TarefaRN.php`.
+    """
+
     def __init__(self, url: str, sigla_sistema: str, identificacao_servico: str):
         self.sigla_sistema = sigla_sistema
         self.identificacao_servico = identificacao_servico
@@ -33,7 +42,7 @@ class Client:
             IdTipoProcedimento=id_tipo_procedimento,
             IdSerie=id_serie,
         )
-        return Unidade.from_many_records(records)
+        return Unidade.from_many_records(serialize_object(records))
 
     def listar_usuarios(
         self,
@@ -47,7 +56,7 @@ class Client:
             IdUnidade=id_unidade,
             IdUsuario=id_usuario,
         )
-        return Usuario.from_many_records(records)
+        return Usuario.from_many_records(serialize_object(records))
 
     def consultar_procedimento(
         self,
@@ -84,7 +93,7 @@ class Client:
                 retornar_procedimentos_anexados
             ),
         )
-        return RetornoConsultaProcedimento.from_record(record)
+        return RetornoConsultaProcedimento.from_record(serialize_object(record))
 
     def definir_controle_prazo(
         self,
@@ -105,7 +114,7 @@ class Client:
             IdentificacaoServico=self.identificacao_servico,
             IdUnidade=id_unidade,
         )
-        return Marcador.from_many_records(records)
+        return Marcador.from_many_records(serialize_object(records))
 
     def listar_series(
         self,
@@ -122,9 +131,9 @@ class Client:
             IdUnidade=id_unidade,
             IdTipoProcedimento=id_tipo_procedimento,
         )
-        return Serie.from_many_records(records)
+        return Serie.from_many_records(serialize_object(records))
 
-    def _consultar_documento(
+    def consultar_documento(
         self,
         id_unidade: str,
         protocolo_documento: str,
@@ -144,4 +153,42 @@ class Client:
             SinRetornarCampos=encode_sin(retornar_campos),
         )
 
-        return record
+        return RetornoConsultaDocumento.from_record(serialize_object(record))
+
+    def listar_andamentos(
+        self,
+        id_unidade: str,
+        protocolo_procedimento: str,
+        retornar_atributos: bool = False,
+        andamentos: list[str] = zeep.xsd.SkipValue,
+        tarefas: list[str] = zeep.xsd.SkipValue,
+        tarefas_modulos: list[str] = zeep.xsd.SkipValue,
+    ):
+        records = self._service.listarAndamentos(
+            SiglaSistema=self.sigla_sistema,
+            IdentificacaoServico=self.identificacao_servico,
+            IdUnidade=id_unidade,
+            ProtocoloProcedimento=protocolo_procedimento,
+            SinRetornarAtributos=encode_sin(retornar_atributos),
+            Andamentos=andamentos,
+            Tarefas=tarefas,
+            TarefasModulos=tarefas_modulos,
+        )
+
+        return Andamento.from_many_records(serialize_object(records))
+
+    def listar_andamentos_marcadores(
+        self,
+        id_unidade: str,
+        protocolo_procedimento: str,
+        marcadores: list[str] = zeep.xsd.SkipValue,
+    ):
+        records = self._service.listarAndamentosMarcadores(
+            SiglaSistema=self.sigla_sistema,
+            IdentificacaoServico=self.identificacao_servico,
+            IdUnidade=id_unidade,
+            ProtocoloProcedimento=protocolo_procedimento,
+            Marcadores=marcadores,
+        )
+
+        return records
