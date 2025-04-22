@@ -53,7 +53,9 @@ def test_consultar_documento(client, id_unidade, protocolo_documento):
         protocolo_documento=protocolo_documento,
     )
 
-    assert documento.id_documento == protocolo_documento
+    assert documento.id_documento != ""
+    assert documento.procedimento_formatado != ""
+    assert documento.documento_formatado == protocolo_documento
 
 
 @pytest.mark.integration
@@ -66,4 +68,6 @@ def test_consultar_procedimento(client, id_unidade, protocolo_procedimento):
         protocolo_procedimento=protocolo_procedimento,
         retornar_andamento_geracao=True,
     )
+
+    assert procedimento.id_procedimento != ""
     assert procedimento.procedimento_formatado == protocolo_procedimento
