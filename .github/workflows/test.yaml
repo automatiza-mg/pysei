@@ -31,5 +31,8 @@ jobs:
           SEI_URL: ${{ secrets.SEI_URL }}
           SEI_SIGLA_SISTEMA: ${{ secrets.SEI_SIGLA_SISTEMA }}
           SEI_IDENTIFICACAO_SERVICO: ${{ secrets.SEI_IDENTIFICACAO_SERVICO }}
+          TEST_ID_UNIDADE: ${{ vars.TEST_ID_UNIDADE }}
+          TEST_PROTOCOLO_DOCUMENTO: ${{ vars.TEST_PROTOCOLO_DOCUMENTO }}
+          TEST_PROTOCOLO_PROCEDIMENTO: ${{ vars.TEST_PROTOCOLO_PROCEDIMENTO }}
         run: |
           pytest -v
