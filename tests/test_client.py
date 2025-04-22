@@ -1,4 +1,5 @@
 import pytest
+
 from python_sei.enums import Aplicabilidade
 
 

@@ -1,16 +1,16 @@
 import zeep
-from zeep.helpers import serialize_object
 import zeep.xsd
+from zeep.helpers import serialize_object
 
 from .models import (
+    Andamento,
     DefinicaoControlePrazo,
+    Marcador,
+    RetornoConsultaDocumento,
     RetornoConsultaProcedimento,
     Serie,
     Unidade,
     Usuario,
-    Marcador,
-    RetornoConsultaDocumento,
-    Andamento,
 )
 from .sin import encode_sin
 

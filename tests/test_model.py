@@ -1,5 +1,5 @@
-from python_sei.models import Unidade, Usuario, Serie
 from python_sei.enums import Aplicabilidade
+from python_sei.models import Serie, Unidade, Usuario
 
 
 def test_unidade():

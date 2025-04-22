@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Self, OrderedDict
+from typing import OrderedDict, Self
 
 from .enums import Aplicabilidade, NivelAcesso
 from .sin import decode_sin, encode_sin
