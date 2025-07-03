@@ -45,6 +45,6 @@ rfc3986==2.0.0
 rich==14.0.0
 SecretStorage==3.3.3
 twine==6.1.0
-urllib3==2.4.0
+urllib3>=2.5.0
 virtualenv==20.30.0
 zeep==4.3.1
